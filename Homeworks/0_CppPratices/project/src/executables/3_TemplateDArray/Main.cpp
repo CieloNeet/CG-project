@@ -4,7 +4,7 @@
 using namespace std;
 int main()
 {
-	CDArray a;
+	CDArray<double> a;
 	a.InsertAt(0, 2.1);
 	a.Print();
 
@@ -18,27 +18,18 @@ int main()
 	a.InsertAt(0, 4.1);
 	a.Print();
 
-
-	CDArray  acopy = a;  //此处用到了拷贝构造函数
-	cout << "\n acopy" << endl;
+	CDArray<double> acopy = a;  //此处用到了拷贝构造函数
 	acopy.Print();
-	
-	
-	
 
-	CDArray  acopy2(a);  //该语句等同于上面的语句，都是初始化
-	cout << "\n acopy2" << endl;
+	CDArray<double> acopy2(a);  //该语句等同于上面的语句，都是初始化
 	acopy2.Print();
-	
 
-	CDArray  acopy3;
+	CDArray<double> acopy3;
 	acopy3 = a;					//此处用到了赋值操作符号"="的重载
-	cout << "\n acopy3" << endl;
 	acopy3.Print();
-	
 
-	CDArray  b;
-	cout << "\n b" << endl;
+
+	CDArray<int> b;
 	b.PushBack(21);
 	b.Print();
 	b.DeleteAt(0);
@@ -46,15 +37,14 @@ int main()
 	b.PushBack(22);
 	b.SetSize(5);
 	b.Print();
-	
 
-	CDArray  c;
-	cout << "\n c" << endl;
+	CDArray<char> c;
 	c.PushBack('a');
 	c.PushBack('b');
 	c.PushBack('c');
 	c.InsertAt(0, 'd');
 	c.Print();
+
 
 	 
 
