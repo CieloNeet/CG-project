@@ -38,20 +38,21 @@ void MainWindow::paintEvent(QPaintEvent* paintevent)
 
 void MainWindow::CreateActions()
 {
-	action_new_ = new QAction(QIcon(":/MainWindow/Resources/images/new.jpg"), tr("&New"), this);
+	//action_new_ = new QAction(QIcon(":/MainWindow/Resources/images/open.jpg"), tr("&New"), this);
+	action_new_ = new QAction(QIcon(":/MainWindow/Resources/images/new.png"), tr("New"), this);
 	action_new_->setShortcut(QKeySequence::New);
 	action_new_->setStatusTip(tr("Create a new file"));
 	// connect ...
 
-	action_open_ = new QAction(QIcon(":/MainWindow/Resources/images/open.jpg"), tr("&Open..."), this);
+	action_open_ = new QAction(QIcon(":/MainWindow/Resources/images/OO.png"), tr("&Open..."), this);
 	action_open_->setShortcuts(QKeySequence::Open);
 	action_open_->setStatusTip(tr("Open an existing file"));
 	connect(action_open_, &QAction::triggered, imagewidget_, &ImageWidget::Open);
 
-	action_save_ = new QAction(QIcon(":/MainWindow/Resources/images/save.jpg"), tr("&Save"), this);
+	action_save_ = new QAction(QIcon(":/MainWindow/Resources/images/SS.png"), tr("&Save"), this);
 	action_save_->setShortcuts(QKeySequence::Save);
 	action_save_->setStatusTip(tr("Save the document to disk"));
-	// connect ...
+	connect(action_save_, &QAction::triggered, imagewidget_, &ImageWidget::SaveAs);
 
 	action_saveas_ = new QAction(tr("Save &As..."), this);
 	action_saveas_->setShortcuts(QKeySequence::SaveAs);
@@ -77,6 +78,26 @@ void MainWindow::CreateActions()
 	action_restore_ = new QAction(tr("Restore"), this);
 	action_restore_->setStatusTip(tr("Show origin image"));
 	connect(action_restore_, &QAction::triggered, imagewidget_, &ImageWidget::Restore);
+
+	action_clear = new QAction(tr("Clear"), this);
+	action_clear->setStatusTip(tr("Clear the selected points"));
+	connect(action_clear, &QAction::triggered, imagewidget_, &ImageWidget::Clear);
+
+	action_all = new QAction(tr("Clear All"), this);
+	action_all->setStatusTip(tr("Show origin image and Clear the selected points"));
+	connect(action_all, &QAction::triggered, imagewidget_, &ImageWidget::Clear_All);
+
+	action_select = new QAction(tr("Seclect Points"), this);
+	action_select->setStatusTip(tr("Select the points"));
+	connect(action_select, &QAction::triggered, imagewidget_, &ImageWidget::Select_Point);
+
+	action_idw = new QAction(tr("IDW"), this);
+	action_idw->setStatusTip(tr("IDW Method"));
+	connect(action_idw, &QAction::triggered, imagewidget_, &ImageWidget::Set_wrapmode_to_IDW);
+
+	action_rbf = new QAction(tr("RBF"), this);
+	action_rbf->setStatusTip(tr("RBF Method"));
+	connect(action_rbf, &QAction::triggered, imagewidget_, &ImageWidget::Set_wrapmode_to_RBF);
 }
 
 void MainWindow::CreateMenus()
@@ -94,6 +115,15 @@ void MainWindow::CreateMenus()
 	menu_edit_->addAction(action_mirror_);
 	menu_edit_->addAction(action_gray_);
 	menu_edit_->addAction(action_restore_);
+	menu_edit_->addAction(action_clear);
+	menu_edit_->addAction(action_all);
+
+	menu_wrap_mode = menuBar()->addMenu(tr("&Warp Mode"));
+	menu_wrap_mode->setStatusTip(tr("Warping menu"));
+	menu_wrap_mode->addAction(action_select);
+	menu_wrap_mode->addAction(action_idw);
+	menu_wrap_mode->addAction(action_rbf);
+	
 }
 
 void MainWindow::CreateToolBars()
@@ -109,6 +139,12 @@ void MainWindow::CreateToolBars()
 	toolbar_file_->addAction(action_mirror_);
 	toolbar_file_->addAction(action_gray_);
 	toolbar_file_->addAction(action_restore_);
+	toolbar_file_->addAction(action_clear);
+	toolbar_file_->addAction(action_all);
+
+	toolbar_file_->addAction(action_select);
+	toolbar_file_->addAction(action_idw);
+	toolbar_file_->addAction(action_rbf);
 }
 
 void MainWindow::CreateStatusBar()

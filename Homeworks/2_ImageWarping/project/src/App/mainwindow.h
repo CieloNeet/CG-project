@@ -40,8 +40,11 @@ private:
 	QMenu		*menu_file_;
 	QMenu		*menu_edit_;
 	QMenu		*menu_help_;
+	QMenu* menu_wrap_mode;
+	
 	QToolBar	*toolbar_file_;
 	QToolBar	*toolbar_edit_;
+	
 	QAction		*action_new_;
 	QAction		*action_open_;
 	QAction		*action_save_;
@@ -50,6 +53,12 @@ private:
 	QAction		*action_mirror_;
 	QAction		*action_gray_;
 	QAction		*action_restore_;
+	QAction* action_select;
+	QAction* action_idw;
+	QAction* action_rbf;
+	QAction* action_clear;
+	QAction* action_all;
+
 
 	ImageWidget		*imagewidget_;
 };
