@@ -8,6 +8,11 @@ namespace Ubpa {
 	class TriMesh;
 	class MinSurf;
 
+	enum PType {
+		KUni = 1,
+		KCot
+	};
+
 	// mesh boundary == 1
 	class Paramaterize : public HeapObj {
 	public:
@@ -20,11 +25,8 @@ namespace Ubpa {
 		void Clear();
 		bool Init(Ptr<TriMesh> triMesh);
 
-		bool Run();
-		bool Run_2();
-		bool ReSet_U();
-		bool ReSet_Cot();
-		
+		bool RUN(PType Mtype, bool isto2D);
+
 
 	private:
 		void Para();
@@ -44,7 +46,7 @@ namespace Ubpa {
 		class P :public TPolygon<V, E, P> { };
 	private:
 		friend class MinSurf;
-
+		friend class ARAP2;
 		
 		Ptr<TriMesh> triMesh;
 		const Ptr<HEMesh<V>> heMesh; // vertice order is same with triMesh

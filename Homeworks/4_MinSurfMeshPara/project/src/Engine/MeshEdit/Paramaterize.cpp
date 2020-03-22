@@ -61,53 +61,23 @@ bool Paramaterize::Init(Ptr<TriMesh> triMesh) {
 	return true;
 }
 
-bool Paramaterize::Run() {
+bool Paramaterize::RUN(PType Mtype, bool isto2D)
+{
 	if (heMesh->IsEmpty() || !triMesh) {
 		printf("ERROR::MinSurf::Run\n"
 			"\t""heMesh->IsEmpty() || !triMesh\n");
 		return false;
 	}
 
-	Para();
-	//Para_2();
-	
-	// half-edge structure -> triangle mesh
-	size_t nV = heMesh->NumVertices();
-	size_t nF = heMesh->NumPolygons();
-	vector<pointf3> positions;
-	vector<unsigned> indice;
-	vector<pointf2> texcoords;
-	positions.reserve(nV);
-	texcoords.reserve(nV);
-	indice.reserve(3 * nF);
-	
-	for (auto v : heMesh->Vertices())
-		positions.push_back(v->pos.cast_to<pointf3>());
-	for (auto v : heMesh->Vertices())
+	if (Mtype == PType::KUni)
 	{
-		auto w = v->pos.cast_to<pointf3>();
-		pointf2 temp;
-		temp[0] = w[0]; temp[1] = w[1];
-		texcoords.push_back(temp);
+		Para();
 	}
-	for (auto f : heMesh->Polygons()) { // f is triangle
-		for (auto v : f->BoundaryVertice()) // vertices of the triangle
-			indice.push_back(static_cast<unsigned>(heMesh->Index(v)));
+	if (Mtype == PType::KCot)
+	{
+		Para_2();
 	}
-
-	triMesh->Update(positions);
-	
-	return true;
-}
-
-bool Paramaterize::ReSet_U() {
-	if (heMesh->IsEmpty() || !triMesh) {
-		printf("ERROR::MinSurf::Run\n"
-			"\t""heMesh->IsEmpty() || !triMesh\n");
-		return false;
-	}
-
-	Para();
+	//Para();
 	//Para_2();
 
 	// half-edge structure -> triangle mesh
@@ -134,90 +104,18 @@ bool Paramaterize::ReSet_U() {
 			indice.push_back(static_cast<unsigned>(heMesh->Index(v)));
 	}
 
-	
-	triMesh->Update(texcoords);
+	if (isto2D == true){
+		triMesh->Update(positions);
+	}
+	else {
+		triMesh->Update(texcoords);
+	}
+	//triMesh->Update(positions);
+
 	return true;
 }
 
-bool Paramaterize::Run_2() {
-	if (heMesh->IsEmpty() || !triMesh) {
-		printf("ERROR::MinSurf::Run\n"
-			"\t""heMesh->IsEmpty() || !triMesh\n");
-		return false;
-	}
 
-	//Para();
-	Para_2();
-
-	// half-edge structure -> triangle mesh
-	size_t nV = heMesh->NumVertices();
-	size_t nF = heMesh->NumPolygons();
-	vector<pointf3> positions;
-	vector<unsigned> indice;
-	vector<pointf2> texcoords;
-	positions.reserve(nV);
-	texcoords.reserve(nV);
-	indice.reserve(3 * nF);
-
-	for (auto v : heMesh->Vertices())
-		positions.push_back(v->pos.cast_to<pointf3>());
-	for (auto v : heMesh->Vertices())
-	{
-		auto w = v->pos.cast_to<pointf3>();
-		pointf2 temp;
-		temp[0] = w[0]; temp[1] = w[1];
-		texcoords.push_back(temp);
-	}
-	for (auto f : heMesh->Polygons()) { // f is triangle
-		for (auto v : f->BoundaryVertice()) // vertices of the triangle
-			indice.push_back(static_cast<unsigned>(heMesh->Index(v)));
-	}
-
-	
-	triMesh->Update(positions);
-	
-	return true;
-}
-
-bool Paramaterize::ReSet_Cot() {
-	if (heMesh->IsEmpty() || !triMesh) {
-		printf("ERROR::MinSurf::Run\n"
-			"\t""heMesh->IsEmpty() || !triMesh\n");
-		return false;
-	}
-
-	//Para();
-	Para_2();
-
-	// half-edge structure -> triangle mesh
-	size_t nV = heMesh->NumVertices();
-	size_t nF = heMesh->NumPolygons();
-	vector<pointf3> positions;
-	vector<unsigned> indice;
-	vector<pointf2> texcoords;
-	positions.reserve(nV);
-	texcoords.reserve(nV);
-	indice.reserve(3 * nF);
-
-	for (auto v : heMesh->Vertices())
-		positions.push_back(v->pos.cast_to<pointf3>());
-	for (auto v : heMesh->Vertices())
-	{
-		auto w = v->pos.cast_to<pointf3>();
-		pointf2 temp;
-		temp[0] = w[0]; temp[1] = w[1];
-		texcoords.push_back(temp);
-	}
-	for (auto f : heMesh->Polygons()) { // f is triangle
-		for (auto v : f->BoundaryVertice()) // vertices of the triangle
-			indice.push_back(static_cast<unsigned>(heMesh->Index(v)));
-	}
-
-
-	
-	triMesh->Update(texcoords);
-	return true;
-}
 
 void Paramaterize::Para() {
 	
@@ -532,6 +430,7 @@ void Paramaterize::Para_2() {
 		Np[1] = Result(i, 1);
 		Np[2] = 0;
 		v->pos = Np.cast_to<vecf3>();
+
 	}
 
 }
@@ -552,4 +451,5 @@ double Paramaterize::Cot_weight(pointf3 p, pointf3 q, pointf3 a, pointf3 b)
 	double cos1 = ap.cos_theta(aq);
 	double cos2 = bp.cos_theta(bq);
 	return cos1 / sqrt(1. - cos1 * cos1) + cos2 / sqrt(1. - cos2 * cos2);
+	//auto Po = heMesh->Polygons();
 }

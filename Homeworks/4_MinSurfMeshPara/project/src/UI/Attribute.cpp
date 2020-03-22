@@ -8,6 +8,8 @@
 #include <Engine/MeshEdit/IsotropicRemeshing.h>
 #include <Engine/MeshEdit/ShortestPath.h>
 #include <Engine/MeshEdit/MST.h>
+#include <Engine/MeshEdit/ARAP.h>
+
 
 #include <Engine/Scene/SObj.h>
 #include <Engine/Scene/AllComponents.h>
@@ -350,31 +352,47 @@ void Attribute::ComponentVisitor::ImplVisit(Ptr<TriMesh> mesh) {
 
 	grid->AddButton("Paramaterize_U", [mesh, pOGLW = attr->pOGLW]() {
 		auto paramaterize = Paramaterize::New(mesh);
-		if (paramaterize->Run())
+		if (paramaterize->RUN(PType::KUni,true))
 			printf("Paramaterize done\n");
 		pOGLW->DirtyVAO(mesh);
 	});
 
 	grid->AddButton("Paramaterize_Cot", [mesh, pOGLW = attr->pOGLW]() {
 		auto paramaterize = Paramaterize::New(mesh);
-		if (paramaterize->Run_2())
+		if (paramaterize->RUN(PType::KCot, true))
 			printf("Paramaterize done\n");
 		pOGLW->DirtyVAO(mesh);
 	});
 
 	grid->AddButton("Set_texcoords_U", [mesh, pOGLW = attr->pOGLW]() {
 		auto paramaterize = Paramaterize::New(mesh);
-		if (paramaterize->ReSet_U())
+		if (paramaterize->RUN(PType::KUni, false))
 			printf("Paramaterize done\n");
 		pOGLW->DirtyVAO(mesh);
 	});
 
 	grid->AddButton("Set_texcoords_Cot", [mesh, pOGLW = attr->pOGLW]() {
 		auto paramaterize = Paramaterize::New(mesh);
-		if (paramaterize->ReSet_Cot())
+		if (paramaterize->RUN(PType::KCot, false))
 			printf("Paramaterize done\n");
 		pOGLW->DirtyVAO(mesh);
 	});
+
+	grid->AddButton("ARAP_2D", [mesh, pOGLW = attr->pOGLW]() {
+		auto arap = ARAP::New(mesh);
+		if (arap->ARAP_RUN(true))
+			printf("Paramaterize done\n");
+		pOGLW->DirtyVAO(mesh);
+	});
+
+	grid->AddButton("ARAP_3D", [mesh, pOGLW = attr->pOGLW]() {
+		auto arap = ARAP::New(mesh);
+		if (arap->ARAP_RUN(false))
+			printf("Paramaterize done\n");
+		pOGLW->DirtyVAO(mesh);
+	});
+
+	
 
 	grid->AddButton("Isotropic Remeshing", [mesh, pOGLW = attr->pOGLW]() {
 		printf("[Isotropic Remeshing] start\n");
