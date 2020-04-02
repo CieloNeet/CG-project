@@ -1,8 +1,11 @@
 #pragma once
 
 #include <Basic/HeapObj.h>
+//#include <Engine/Scene/CmptSimu/MassSpring.h>
 //#include <Engine/Primitive/MassSpring.h>
 #include <UGM/UGM>
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 namespace Ubpa {
 	class Simulate : public HeapObj {
@@ -45,17 +48,24 @@ namespace Ubpa {
 		void SetFix(const std::vector<unsigned>& f) { this->fixed_id = f; Init();};
 		const std::vector<pointf3>& GetVelocity() { return velocity; };
 		//void SetVelocity(const std::vector<pointf3>& v) { velocity = v; };
-
-		void SetLeftFix();
+		void Restore();
+		void SetLeftFix(bool istet);
+		bool is_fixed(int i);
+		double distance(pointf3 x, pointf3 y);
 
 
 	private:
 		// kernel part of the algorithm
 		void SimulateOnce();
+		void Set_y();
+		void Set_A();
+		void Insert_A(size_t i, size_t j, Eigen::MatrixXd  D);    //将3*3子矩阵插入到系数矩阵中
+		void Set_b();
 
 	private:
 		float h = 0.03f;  //步长
-		float stiff;
+		float stiff = 1.f;
+		float g = 9.8f;
 		std::vector<unsigned> fixed_id;  //fixed point id
 
 
@@ -65,7 +75,14 @@ namespace Ubpa {
 
 		//simulation data
 		std::vector<pointf3> positions;
+		std::vector<pointf3> old_positions;
 		std::vector<pointf3> velocity;
-		
+		std::vector<double> length;   //弹簧初始长度
+		std::vector<double> y;  //迭代初值
+		std::vector<double> x_iter;  //迭代x
+
+		std::vector<Eigen::Triplet<double>>  coff;
+		Eigen::SparseMatrix<double> A;
+		Eigen::MatrixXd b;
 	};
 }

@@ -33,14 +33,17 @@ namespace Ubpa {
 	public:
 		const std::vector<unsigned>& GetFix() const { return fix_id; };
 		float GetStiff() const { return CastTo<MassSpring>(primitive)->GetSimu()->GetStiff(); };
+		float GetTimeStep() const { return CastTo<MassSpring>(primitive)->GetSimu()->GetTimeStep(); }
 		Ptr<Primitive> GetMesh() {
 			return primitive;
 		}// return CastTo<MassSpring>(primitive); }
 
 	public:
 		void SetStiff(float stiff) { CastTo<MassSpring>(primitive)->GetSimu()->SetStiff(stiff); };
+		void SetTimeStep(float h) { CastTo<MassSpring>(primitive)->GetSimu()->SetTimeStep(h); }
 		void SetFix(std::vector<unsigned>& fix) { fix_id = fix; };
-		void SetLeftFix() {CastTo<MassSpring>(primitive)->GetSimu()->SetLeftFix();};
+		void SetLeftFix(bool istet) {CastTo<MassSpring>(primitive)->GetSimu()->SetLeftFix(istet);};
+		void Restore_() { CastTo<MassSpring>(primitive)->RestoreSimu(); }
 
 	private:
 		std::vector<unsigned> fix_id;

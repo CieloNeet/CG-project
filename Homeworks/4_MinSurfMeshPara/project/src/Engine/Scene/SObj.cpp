@@ -3,10 +3,7 @@
 #include "SObjSaver.h"
 #include "SObjLoader.h"
 #include "AssimpLoader.h"
-<<<<<<< HEAD
-=======
 #include "SimpleLoader.h"
->>>>>>> upstream/master
 
 #include <Engine/Scene/Component.h>
 #include <Engine/Scene/CmptTransform.h>
@@ -33,7 +30,7 @@ void SObj::AttachComponent(Ptr<Component> component) {
 const std::vector<Ptr<Component>> SObj::GetAllComponents() const {
 	std::vector<Ptr<Component>> rst;
 
-	for (auto & component : components)
+	for (auto& component : components)
 		rst.push_back(component.second);
 
 	return rst;
@@ -56,7 +53,7 @@ bool SObj::HaveComponentSameTypeWith(Ptr<Component> ptr) const {
 	return components.find(typeid(*ptr)) != components.cend();
 }
 
-bool SObj::Save(const string & path) {
+bool SObj::Save(const string& path) {
 	auto saver = SObjSaver::New();
 	if (StrAPI::IsEndWith(path, ".sobj"))
 		saver->Init(path);
@@ -67,17 +64,14 @@ bool SObj::Save(const string & path) {
 	return true;
 }
 
-const Ptr<SObj> SObj::Load(const string & path) {
+const Ptr<SObj> SObj::Load(const string& path) {
 	Ptr<SObj> sobj;
 	if (StrAPI::IsEndWith(path, ".sobj"))
 		sobj = SObjLoader::Load(path);
-<<<<<<< HEAD
-=======
 	else if (StrAPI::IsEndWith(path, ".tet"))
 		sobj = SimpleLoader::LoadTet(path);
 	else if (StrAPI::IsEndWith(path, ".obj"))
 		sobj = SimpleLoader::LoadObj(path);
->>>>>>> upstream/master
 	else
 		sobj = AssimpLoader::Load(path);
 

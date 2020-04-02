@@ -193,8 +193,17 @@ void Attribute::ComponentVisitor::ImplVisit(Ptr<CmptSimulate> simulate) {
 	grid->AddEditVal({ "stiff" }, simulate->GetStiff(), 0.1f, [=](const float& val) {
 		simulate->SetStiff(val);
 		});
-	grid->AddButton("set x min fix", [simulate]() {
-		simulate->SetLeftFix();
+	grid->AddEditVal({ "time step" }, simulate->GetTimeStep(), 0.01f, [=](const float& val) {
+		simulate->SetTimeStep(val);
+		});
+	grid->AddButton("set x min fix ", [simulate]() {
+		simulate->SetLeftFix(false);
+		});
+	grid->AddButton("set x min fix tet", [simulate]() {
+		simulate->SetLeftFix(true);
+		});
+	grid->AddButton("restore", [simulate]() {
+		simulate->Restore_();
 		});
 }
 

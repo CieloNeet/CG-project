@@ -63,6 +63,7 @@ namespace Ubpa {
 		
 		void RunSimu() { simulation->Run(); Update(simulation->GetPositions()); };
 		void InitSimu() { simulation->Init(); Update(simulation->GetPositions()); };
+		void RestoreSimu() { simulation->Restore(); Update(simulation->GetPositions()); }
 		Ptr<Simulate> GetSimu() {return simulation;};
 	private:
 		void NewSimu() { simulation = Simulate::New(pointlist, edgelist); };

@@ -471,7 +471,7 @@ void Ubpa::Grid::AddEditVal(const std::vector<std::string>& texts, const float v
 {
 	QDoubleSpinBox* spinboxs = new QDoubleSpinBox;
 
-	spinboxs->setMinimum(0.1);
+	spinboxs->setMinimum(0.);
 	spinboxs->setMaximum(DBL_MAX);
 	spinboxs->setSingleStep(singleStep);
 	spinboxs->setValue(val);
