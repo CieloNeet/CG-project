@@ -3,9 +3,9 @@
 #include <taichi.h>    // Note: You DO NOT have to install taichi or taichi_mpm.
 using namespace taichi;// You only need [taichi.h] - see below for instructions.
 const int n = 80 /*grid resolution (cells)*/, window_size = 800;
-const real dt = 1e-4_f, frame_dt = 1e-3_f, dx = 1.0_f / n, inv_dx = 1.0_f / dx;
+const real dt = 5e-5_f, frame_dt = 1e-3_f, dx = 1.0_f / n, inv_dx = 1.0_f / dx;
 auto particle_mass = 1.0_f, vol = 1.0_f;
-auto hardening = 10.0_f, E = 1e4_f, nu = 0.2_f;
+auto hardening = 10.0_f, E = 3e4_f, nu = 0.2_f;
 real mu_0 = E / (2 * (1 + nu)), lambda_0 = E * nu / ((1+nu) * (1 - 2 * nu));
 using Vec = Vector2; using Mat = Matrix2; bool plastic = true;
 struct Particle { Vec x, v; Mat F, C; real Jp; int c/*color*/;

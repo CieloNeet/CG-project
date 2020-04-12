@@ -18,8 +18,8 @@ const int window_size = 800;
 // Grid resolution (cells)
 const int n = 80;
 
-const real dt = 1e-6_f;
-const real frame_dt = 1e-5_f;
+const real dt = 1e-4_f;
+const real frame_dt = 2e-4_f;
 const real dx = 1.0_f / n;
 const real inv_dx = 1.0_f / dx;
 
@@ -27,7 +27,7 @@ const real inv_dx = 1.0_f / dx;
 const auto particle_mass = 1.0_f;
 const auto vol = 1.0_f;        // Particle Volume
 const auto hardening = 10.0_f; // Snow hardening factor
-const auto E = 1e5_f;          // Young's Modulus
+const auto E = 1e4_f;          // Young's Modulus
 const auto nu = 0.2_f;         // Poisson ratio
 const bool plastic = true;
 
@@ -64,7 +64,7 @@ std::vector<Particle> particles;
 // Vector3: [velocity_x, velocity_y, mass]
 Vector3 grid[n + 1][n + 1];
 
-void advance(real dt,bool is_gravity) {
+void advance(real dt) {
   // Reset grid
   std::memset(grid, 0, sizeof(grid));
 
@@ -134,11 +134,8 @@ void advance(real dt,bool is_gravity) {
         // Normalize by mass
         g /= g[2];
         // Gravity
-        if (is_gravity)
-        {
-            g += dt * Vector3(0, -200, 0);
-        }
-        
+        g += dt * Vector3(0, -200, 0);
+       
         
         // boundary thickness
         real boundary = 0.05;
@@ -150,6 +147,12 @@ void advance(real dt,bool is_gravity) {
         if (x < boundary || x > 1-boundary || y > 1-boundary) {
           g = Vector3(0);
         }
+        /*if (x < boundary || x > 1 - boundary) {
+            g = Vector3(0);
+        }
+        if (y > 1 - boundary) {
+            g[1] = std::min(0.0f, g[1]);
+        }*/
         // Separate boundary
         if (y < boundary) {
           g[1] = std::max(0.0f, g[1]);
@@ -255,23 +258,37 @@ void add_object_rectangle(Vec v1, Vec v2, int c, int num = 500, int mtype = 0, V
     }
 }
 
+//水流冲击
+void add_jet(int step) {
+    if (step == 0)
+    {
+        add_object_rectangle(Vec(0.45, 0.04), Vec(0.55, 0.14), 0xF2B134, 1000, 1);
+        add_object_rectangle(Vec(0.45, 0.84), Vec(0.55, 0.94), 0xF2B134, 1000, 1);
+    }
+    add_object_rectangle(Vec(0.5, 0.30), Vec(0.51, 0.31), 0x87CEFA, 10, 0, Vec(0.0, -50.0));
+    add_object_rectangle(Vec(0.5, 0.35), Vec(0.51, 0.36), 0x87CEFA, 10, 0, Vec(0.0, 50.0));
+}
 
+void add_jet_2(int step,int type) {
+    if (step == 0)
+    {
+        //add_object_rectangle(Vec(0.43, 0.43), Vec(0.6, 0.6), 0xF2B134, 2000, type);
+        add_object_circle(Vec(0.5, 0.5), 0.08, 0xF2B134, 1500, type);
+    }
+    add_object_rectangle(Vec(0.20, 0.50), Vec(0.21, 0.51), 0x87CEFA, 10, 0, Vec(50.0, 0.0));
+    add_object_rectangle(Vec(0.80, 0.50), Vec(0.81, 0.51), 0x87CEFA, 10, 0, Vec(-50.0, 0.0));
+    add_object_rectangle(Vec(0.50, 0.20), Vec(0.51, 0.21), 0x87CEFA, 10, 0, Vec(0.0, 59.0));
+    add_object_rectangle(Vec(0.50, 0.80), Vec(0.51, 0.81), 0x87CEFA, 10, 0, Vec(0.0, -50.0));
+    
+}
 
-//两球碰撞
+void add_jet_mm()
+{
+    add_object_rectangle(Vec(0.5, 0.80), Vec(0.51, 0.81), 0x87CEFA, 10, 0, Vec(0.0, 80.0));
+}
+
+//多球碰撞
 void add_test_1()
-{
-    add_object_circle(Vec(0.15, 0.85), 0.05f, 0xF2B134, 1000, 1, Vec(150.0, 0));
-    add_object_circle(Vec(0.85, 0.85), 0.05f, 0xED553B, 1000, 1, Vec(-150.0, 0));
-}
-
-//雪球对撞
-void add_test_2()
-{
-    add_object_circle(Vec(0.15, 0.85), 0.05f, 0xF2B134, 1000, 2, Vec(10.0, 0));
-    add_object_circle(Vec(0.85, 0.85), 0.05f, 0xED553B, 1000, 2, Vec(-10.0, 0));
-}
-
-void add_test_3()
 {
     add_object_circle(Vec(0.55, 0.65), 0.04f, 0xF2B134, 500, 1, Vec(0.0, 0.0));
     add_object_circle(Vec(0.49, 0.75), 0.04f, 0xF2B134, 500, 1, Vec(0.0, 0.0));
@@ -287,17 +304,15 @@ int main() {
   GUI gui("Real-time 2D MLS-MPM", window_size, window_size);
   auto &canvas = gui.get_canvas();
 
-  add_test_1();
-  //add_test_2();
-  //add_test_3();
+  //add_test_1();
+  
   
   int frame = 0;
 
   // Main Loop
   for (int step = 0;; step++) {
     // Advance simulation
-    //advance(dt,true);
-    advance(dt, false);
+    advance(dt);
 
     // Visualize frame
     if (step % int(frame_dt / dt) == 0) {
@@ -312,7 +327,12 @@ int main() {
       // Update image
       gui.update();
 
-      
+      if (step < 100)
+      {
+          //add_jet(step);
+          add_jet_2(step,2);
+          //add_jet_mm();
+      }
 
       // Write to disk (optional)
        //canvas.img.write_as_image(fmt::format("tmp/{:05d}.png", frame++));

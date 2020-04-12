@@ -82,7 +82,7 @@ int main() {
       canvas.rect(Vec(0.04), Vec(0.96)).radius(2).color(0x4FB99F).close();// Box
       for(auto p:particles)canvas.circle(p.x).radius(2).color(p.c);//Particles
       gui.update();                                              // Update image
-      // canvas.img.write_as_image(fmt::format("tmp/{:05d}.png", f++));
+      //canvas.img.write_as_image(fmt::format("tmp/{:05d}.png", f++));
     }
   }
 } //----------------------------------------------------------------------------

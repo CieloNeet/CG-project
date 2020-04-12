@@ -18,8 +18,8 @@ const int window_size = 800;
 // Grid resolution (cells)
 const int n = 80;
 
-const real dt = 1e-6_f;
-const real frame_dt = 1e-5_f;
+const real dt = 1e-4_f;
+const real frame_dt = 1e-3_f;
 const real dx = 1.0_f / n;
 const real inv_dx = 1.0_f / dx;
 
@@ -27,7 +27,7 @@ const real inv_dx = 1.0_f / dx;
 const auto particle_mass = 1.0_f;
 const auto vol = 1.0_f;        // Particle Volume
 const auto hardening = 10.0_f; // Snow hardening factor
-const auto E = 1e5_f;          // Young's Modulus
+const auto E = 1e4_f;          // Young's Modulus
 const auto nu = 0.2_f;         // Poisson ratio
 const bool plastic = true;
 
@@ -64,7 +64,7 @@ std::vector<Particle> particles;
 // Vector3: [velocity_x, velocity_y, mass]
 Vector3 grid[n + 1][n + 1];
 
-void advance(real dt,bool is_gravity) {
+void advance(real dt, int step, int time = 100) {
   // Reset grid
   std::memset(grid, 0, sizeof(grid));
 
@@ -134,11 +134,16 @@ void advance(real dt,bool is_gravity) {
         // Normalize by mass
         g /= g[2];
         // Gravity
-        if (is_gravity)
+        g += dt * Vector3(0, -200, 0);
+        if (step % 300 < 50)
         {
-            g += dt * Vector3(0, -200, 0);
+            g += dt * Vector3(300, 0, 0);
         }
-        
+        else if (step % 300 >= 200&& step % 300 < 250)
+        {
+            g += dt * Vector3(-300, 0, 0);
+        }
+       
         
         // boundary thickness
         real boundary = 0.05;
@@ -257,47 +262,38 @@ void add_object_rectangle(Vec v1, Vec v2, int c, int num = 500, int mtype = 0, V
 
 
 
-//两球碰撞
-void add_test_1()
+
+void add_test_1(bool add_jelly)
 {
-    add_object_circle(Vec(0.15, 0.85), 0.05f, 0xF2B134, 1000, 1, Vec(150.0, 0));
-    add_object_circle(Vec(0.85, 0.85), 0.05f, 0xED553B, 1000, 1, Vec(-150.0, 0));
+    add_object_rectangle(Vec(0.2, 0.04), Vec(0.8, 0.14), 0xED553B, 2000, 0);
+    //add_object_rectangle(Vec(0.1, 0.05), Vec(0.15, 0.06), 0x068587, 500, 1);
+    if (add_jelly)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            add_object_rectangle(Vec(0.2 + 0.06 * i, 0.15), Vec(0.21 + 0.06 * i, 0.16), 0xF2B134, 100, 1);
+        }
+    }
+   
 }
 
-//雪球对撞
-void add_test_2()
-{
-    add_object_circle(Vec(0.15, 0.85), 0.05f, 0xF2B134, 1000, 2, Vec(10.0, 0));
-    add_object_circle(Vec(0.85, 0.85), 0.05f, 0xED553B, 1000, 2, Vec(-10.0, 0));
-}
-
-void add_test_3()
-{
-    add_object_circle(Vec(0.55, 0.65), 0.04f, 0xF2B134, 500, 1, Vec(0.0, 0.0));
-    add_object_circle(Vec(0.49, 0.75), 0.04f, 0xF2B134, 500, 1, Vec(0.0, 0.0));
-    add_object_circle(Vec(0.61, 0.75), 0.04f, 0xF2B134, 500, 1, Vec(0.0, 0.0));
-    add_object_circle(Vec(0.67, 0.85), 0.04f, 0xF2B134, 500, 1, Vec(0.0, 0.0));
-    add_object_circle(Vec(0.43, 0.85), 0.04f, 0xF2B134, 500, 1, Vec(0.0, 0.0));
-    add_object_circle(Vec(0.55, 0.85), 0.04f, 0xF2B134, 500, 1, Vec(0.0, 0.0));
-    add_object_circle(Vec(0.55, 0.15), 0.04f, 0xED553B, 500, 1, Vec(0.0, 50.0));
-}
 
 
 int main() {
   GUI gui("Real-time 2D MLS-MPM", window_size, window_size);
   auto &canvas = gui.get_canvas();
 
-  add_test_1();
-  //add_test_2();
-  //add_test_3();
+  //add_test_1(false);
+  add_test_1(true);
   
   int frame = 0;
 
   // Main Loop
   for (int step = 0;; step++) {
     // Advance simulation
-    //advance(dt,true);
-    advance(dt, false);
+
+    advance(dt,step,25);
+    //advance(dt, step);
 
     // Visualize frame
     if (step % int(frame_dt / dt) == 0) {
