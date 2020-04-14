@@ -7,19 +7,22 @@ out vec4 FragColor;
 
 uniform vec3 point_light_pos;
 uniform vec3 point_light_radiance;
+uniform sampler2D shadowmap;
+uniform bool have_shadow;
+// TODO: HW8 - 2_Shadow | uniforms
+// add uniforms for mapping position in world space to position in shadowmap space
 
 uniform vec3 ambient_irradiance;
 uniform sampler2D albedo_texture;
 uniform float roughness;
 uniform float metalness;
-uniform sampler2D normalmap;
 
 uniform vec3 camera_pos;
 
 in VS_OUT {
     vec3 WorldPos;
     vec2 TexCoord;
-    mat3 TBN;
+    vec3 Normal;
 } vs_out;
 
 vec3 fresnel(vec3 albedo, float metalness, float cos_theta) {
@@ -56,7 +59,7 @@ void main() {
 	float alpha = roughness * roughness;
 	
 	vec3 V = normalize(camera_pos - vs_out.WorldPos);
-	vec3 N = normalize(vs_out.TBN[2]); // TODO
+	vec3 N = normalize(vs_out.Normal);
 	vec3 fragTolight = point_light_pos - vs_out.WorldPos; // frag to light
 	float dist2 = dot(fragTolight, fragTolight);
 	float dist = sqrt(dist2);
@@ -74,8 +77,9 @@ void main() {
 	vec3 specular = fr * D * G / (4 * max(dot(L, N)*dot(V, N), EPSILON));
 	
 	vec3 brdf = diffuse + specular;
-	
-	vec3 Lo_direct = brdf * point_light_radiance * max(cos_theta, 0) / dist2;
+	// TODO: HW8 - 2_Shadow | shadow
+	float visible = 1.0; // if the fragment is in shadow, set it to 0
+	vec3 Lo_direct = visible * brdf * point_light_radiance * max(cos_theta, 0) / dist2;
 	vec3 Lo_ambient = (1-metalness) * albedo / PI * ambient_irradiance;
 	vec3 Lo = Lo_direct + Lo_ambient;
 	
