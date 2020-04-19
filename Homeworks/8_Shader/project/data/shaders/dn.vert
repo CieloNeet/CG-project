@@ -21,8 +21,14 @@ uniform float displacement_coefficient;
 void main()
 {
     // TODO HW8 - 0_displacement_normal | calculate displacement
-    vec4 worldPos = model * vec4(aPos, 1.0);
-    vs_out.WorldPos = worldPos.xyz / worldPos.w;
+    vec3 Displacement=texture(displacementmap,aTexCoord).rgb;
+    //Displacement = 1.0f * Displacement + vec3(1.0,1.0,1.0);
+    float displacement=texture(displacementmap,aTexCoord).r;
+    float deepth=displacement_coefficient*displacement;
+    //vec4 worldPos = model * vec4(aPos+displacement_coefficient*Displacement, 1.0);
+    //vec4 worldPos = model * vec4(aPos + vec3(0.0, displacement_coefficient * displacement, 0.0), 1.0);
+    vec4 worldPos = model * vec4(aPos + deepth*aNormal, 1.0);
+    vs_out.WorldPos = worldPos.xyz /worldPos.w;
 	
     vs_out.TexCoord = aTexCoord;
 	
@@ -30,8 +36,9 @@ void main()
 	
     // TODO HW8 - 0_displacement_normal | calculate TBN
     vec3 N = normalize(normalMatrix * aNormal);
-    vec3 T = vec3(0);
-	vec3 B = vec3(0);
+    vec3 T = normalize(normalMatrix * aTangent);
+	T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(T, N);
 	vs_out.TBN = mat3(T, B, N);
 
     gl_Position = projection * view * worldPos;

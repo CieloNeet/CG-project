@@ -281,7 +281,85 @@ gl::Texture2D genDisplacementmap(const SimpleLoader::OGLResources* resources) {
     // 1. set displacementData with resources's positions, indices, normals, ...
     // 2. change global variable: displacement_bias, displacement_scale, displacement_lambda
 
-    // ...
+    const size_t VNum = resources->positions.size();
+    float dotmin = 1024 * 1024.0f;
+    float dotmax = -1024 * 1024.0f;
+    std::vector<std::vector<int>> Adj(VNum, std::vector<int>(VNum, 0));
+
+    for (size_t i = 0; i < resources->indices.size(); i = i + 3)
+    {
+        auto i0 = resources->indices[i];
+        auto i1 = resources->indices[i + 1];
+        auto i2 = resources->indices[i + 2];
+
+
+        if (Adj[i0][i1] == 0) {
+            Adj[i0][i1] = 1; Adj[i1][i0] = 1;
+            Adj[i0][i0] += 1; Adj[i1][i1] += 1;
+        }
+        if (Adj[i1][i2] == 0) {
+            Adj[i1][i2] = 1; Adj[i2][i1] = 1;
+            Adj[i1][i1] += 1; Adj[i2][i2] += 1;
+        }
+        if (Adj[i2][i0] == 0) {
+            Adj[i2][i0] = 1; Adj[i0][i2] = 1;
+            Adj[i2][i2] += 1; Adj[i0][i0] += 1;
+        }
+    }
+    float* D = new float[1024 * 1024];
+    for (size_t i = 0; i < resources->positions.size(); i++)
+    {
+        auto text = resources->texcoords[i].cast_to<vecf2>();
+        int x = int(1024 * text[0]); int y = int(1024 * text[1]);
+        if (x <= 0)x = 0;
+        int wei = 1024 * x + y;
+        /*if (wei <= 0) {
+            wei = -wei;
+        }*/
+
+        if (Adj[i][i] == 0) D[wei] = 0.0f;
+        else {
+            float AdjNum = Adj[i][i];
+            auto pi = resources->positions[i].cast_to<vecf3>();
+            //if (i == 0) { std::cout << pi << std::endl; }
+            for (size_t j = 0; j < VNum; j++)
+            {
+                //std::cout << "hhh" << std::endl;
+                if (Adj[i][j] == 1)
+                {
+                    auto pj = resources->positions[j].cast_to<vecf3>();
+                    pi = pi - pj * 1.0f / AdjNum;
+                }
+
+            }
+            // if (i == 0) { std::cout << pi << std::endl; }
+            auto ni = resources->normals[i].cast_to<vecf3>();
+            D[wei] = pi.dot(ni);
+
+
+        }
+        dotmin = (D[wei] < dotmin) ? D[wei] : dotmin;
+        dotmax = (D[wei] > dotmax) ? D[wei] : dotmax;
+    }
+
+    for (size_t i = 0; i < 2 * resources->positions.size(); i++)
+    {
+        //std::cout << displacementData[i] << std::endl;
+    }
+
+    for (size_t i = 0; i < 1024 * 1024; i++) {
+        if (fabs(D[i]) > 1e-8) {
+            D[i] = (D[i] - dotmin) / (dotmax - dotmin);
+        }
+    }
+
+    displacementData = D;
+
+    displacement_bias = dotmin;
+    displacement_scale = dotmax - dotmin;
+    //displacement_lambda = 10.0f;
+    std::cout << dotmin << std::endl;
+    std::cout << dotmax << std::endl;
 
     gl::Texture2D displacementmap;
     displacementmap.SetImage(0, gl::PixelDataInternalFormat::Red, 1024, 1024, gl::PixelDataFormat::Red, gl::PixelDataType::Float, displacementData);
