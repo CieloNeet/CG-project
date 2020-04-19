@@ -310,6 +310,7 @@ gl::Texture2D genDisplacementmap(const SimpleLoader::OGLResources* resources) {
         }
     }
     float* D = new float[1024 * 1024];
+    float* sigma2 = new float[VNum];
     for (size_t i = 0; i < resources->positions.size(); i++)
     {
         auto text = resources->texcoords[i].cast_to<vecf2>();
@@ -339,6 +340,7 @@ gl::Texture2D genDisplacementmap(const SimpleLoader::OGLResources* resources) {
             auto ni = resources->normals[i].cast_to<vecf3>();
             D[wei] = pi.dot(ni);
 
+            sigma2[i] = D[wei];
 
         }
         dotmin = (D[wei] < dotmin) ? D[wei] : dotmin;
@@ -355,6 +357,25 @@ gl::Texture2D genDisplacementmap(const SimpleLoader::OGLResources* resources) {
             D[i] = (D[i] - dotmin) / (dotmax - dotmin);
         }
     }
+
+    /*for (int i = 0; i < 1024; i++) {
+        for (int j = 0; j < 1024; j++) {
+            vecf2 pos;
+            pos[0] = i; pos[1] = j;
+            int c = 0;
+            float dmin = (pos - 1024 * (resources->texcoords[0].cast_to<vecf2>())).norm();
+            for (int k = 1; k < VNum; k++)
+            {
+                float d = (pos - 1024 * (resources->texcoords[k].cast_to<vecf2>())).norm();
+                if (dmin > d) {
+                    dmin = d;
+                    c = k;
+                }
+            }
+            D[1024 * j + i] = sigma2[c] * pow(2.71828, -dmin / 4.);
+        }
+        
+    }*/
 
     displacementData = D;
 
