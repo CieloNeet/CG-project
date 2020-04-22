@@ -78,6 +78,7 @@ int main()
 
     // build and compile our shader zprogram
     // ------------------------------------
+    
     gl::Shader vs(gl::ShaderType::VertexShader, "../data/shaders/dn.vert");
     gl::Shader fs(gl::ShaderType::FragmentShader, "../data/shaders/light_dn.frag");
     gl::Program program(&vs, &fs);
@@ -157,6 +158,9 @@ int main()
     gl::Texture2D checkerboard = loadTexture("../data/textures/checkerboard.png");
     gl::Texture2D normalmap = loadTexture("../data/textures/cg_normalmap.jpg");
     gl::Texture2D displacementmap = loadTexture("../data/textures/cg_displacementmap.jpg");
+    //gl::Texture2D checkerboard = loadTexture("../data/checkerboard.png");
+    //gl::Texture2D normalmap = loadTexture("../data/textures/NormalMap.png");
+    //gl::Texture2D displacementmap = loadTexture("../data/textures/DisplacementMap.png");
 
     // render loop
     // -----------

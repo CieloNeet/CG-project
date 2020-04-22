@@ -202,8 +202,16 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
         camera.ProcessKeyboard(Camera::Movement::DOWN, deltaTime);
 
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        have_denoise = !have_denoise;
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    {
+        have_denoise = true;
+        //std::cout << have_denoise << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+    {
+        have_denoise = false;
+        //std::cout << have_denoise << std::endl;
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -310,13 +318,14 @@ gl::Texture2D genDisplacementmap(const SimpleLoader::OGLResources* resources) {
         }
     }
     float* D = new float[1024 * 1024];
-    float* sigma2 = new float[VNum];
+    float* ETA = new float[VNum];
     for (size_t i = 0; i < resources->positions.size(); i++)
     {
         auto text = resources->texcoords[i].cast_to<vecf2>();
-        int x = int(1024 * text[0]); int y = int(1024 * text[1]);
+        int x = int(1023 * text[0]); int y = int(1023 * text[1]);
         if (x <= 0)x = 0;
-        int wei = 1024 * x + y;
+        //int wei = 1024 * x + y;
+        int wei = 1024 * y + x;
         /*if (wei <= 0) {
             wei = -wei;
         }*/
@@ -340,17 +349,14 @@ gl::Texture2D genDisplacementmap(const SimpleLoader::OGLResources* resources) {
             auto ni = resources->normals[i].cast_to<vecf3>();
             D[wei] = pi.dot(ni);
 
-            sigma2[i] = D[wei];
+            ETA[i] = D[wei];
 
         }
         dotmin = (D[wei] < dotmin) ? D[wei] : dotmin;
         dotmax = (D[wei] > dotmax) ? D[wei] : dotmax;
     }
 
-    for (size_t i = 0; i < 2 * resources->positions.size(); i++)
-    {
-        //std::cout << displacementData[i] << std::endl;
-    }
+    
 
     for (size_t i = 0; i < 1024 * 1024; i++) {
         if (fabs(D[i]) > 1e-8) {
@@ -358,30 +364,79 @@ gl::Texture2D genDisplacementmap(const SimpleLoader::OGLResources* resources) {
         }
     }
 
+    for (size_t i = 0; i < VNum; i++) {
+        
+            ETA[i] = (ETA[i] - dotmin) / (dotmax - dotmin);
+        
+    }
+
+   for (int i = 0; i < 1024; i++) {
+        for (int j = 0; j < 1024; j++) {
+            if (D[1024 * j + i] < 1e-6)
+            {
+                vecf2 target;
+                target[0] = i; target[1] = j;
+                int item = 0;
+                float min_norm = (target - 1024 * (resources->texcoords[0].cast_to<vecf2>())).norm();
+                for (int k = 1; k < VNum; k++)
+                {
+                    float d = (target - 1024 * (resources->texcoords[k].cast_to<vecf2>())).norm();
+                    if (d < min_norm) {
+                        min_norm = d;
+                        item = k;
+                    }
+                }
+                D[1024 * j + i] = ETA[item];
+            }
+            
+        }
+    }
+
+
     /*for (int i = 0; i < 1024; i++) {
         for (int j = 0; j < 1024; j++) {
-            vecf2 pos;
-            pos[0] = i; pos[1] = j;
-            int c = 0;
-            float dmin = (pos - 1024 * (resources->texcoords[0].cast_to<vecf2>())).norm();
-            for (int k = 1; k < VNum; k++)
-            {
-                float d = (pos - 1024 * (resources->texcoords[k].cast_to<vecf2>())).norm();
-                if (dmin > d) {
-                    dmin = d;
-                    c = k;
+            if (D[1024 * j + 1] == 0.0f) {
+                float weight = 0.0f;
+                int k = 0;
+                for (int k = 0; k < i; k++) {
+                    if (D[1024 * j + k] != 0.0f) {
+                        weight += D[1024 * j + k];
+                        k++;
+                        break;
+                    }
                 }
+                for (int k = i + 1; k < 1024; k++) {
+                    if (D[1024 * j + k] != 0.0f) {
+                        weight += D[1024 * j + k];
+                        k++;
+                        break;
+                    }
+                }
+                for (int k = 0; k < j; k++) {
+                    if (D[1024 * k + i] != 0.0f) {
+                        weight += D[1024 * k + i];
+                        k++;
+                        break;
+                    }
+                }
+                for (int k = j + 1; k < 1024; k++) {
+                    if (D[1024 * k + i] != 0.0f) {
+                        weight += D[1024 * k + i];
+                        k++;
+                        break;
+                    }
+                }
+                D[1024 * j + i] = weight / float(k);
             }
-            D[1024 * j + i] = sigma2[c] * pow(2.71828, -dmin / 4.);
+           
         }
-        
     }*/
 
     displacementData = D;
 
     displacement_bias = dotmin;
     displacement_scale = dotmax - dotmin;
-    //displacement_lambda = 10.0f;
+    displacement_lambda = 1.0f;
     std::cout << dotmin << std::endl;
     std::cout << dotmax << std::endl;
 

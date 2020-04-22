@@ -23,9 +23,16 @@ uniform bool have_denoise;
 void main()
 {
     // TODO: HW8 - 1_denoise | denoise
-   float eta = texture(displacementmap,aTexCoord).r;
-    float deepth = displacement_lambda * (displacement_bias + displacement_scale * eta);
-    vec4 worldPos = model * vec4(aPos - aNormal * deepth, 1.0);
+    vec4 worldPos;
+    if(!have_denoise){
+       float eta = texture(displacementmap,aTexCoord).r;
+       float deepth = displacement_lambda * (displacement_bias + displacement_scale * eta);
+       worldPos = model * vec4(aPos - aNormal * deepth, 1.0);
+    }
+    else{
+       worldPos = model * vec4(aPos , 1.0);
+    }
+    
 	
 	vs_out.WorldPos = worldPos.xyz / worldPos.w;
     vs_out.TexCoord = aTexCoord;
