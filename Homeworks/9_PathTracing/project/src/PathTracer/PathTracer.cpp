@@ -68,13 +68,14 @@ rgbf PathTracer::Shade(const Intersectors& intersectors, const IntersectorCloses
 
 	constexpr rgbf error_color = rgbf{ 1.f,0.f,1.f };
 	constexpr rgbf todo_color = rgbf{ 0.f,1.f,0.f };
+	
 	constexpr rgbf zero_color = rgbf{ 0.f,0.f,0.f };
 
 	if (!intersection.IsIntersected()) {
 		if (last_bounce_specular && env_light != nullptr) {
 			// TODO: environment light
-
-			return todo_color;
+			
+			return env_light->Radiance(-wo);
 		}
 		else
 			return zero_color;
@@ -89,8 +90,9 @@ rgbf PathTracer::Shade(const Intersectors& intersectors, const IntersectorCloses
 			if (!area_light) return error_color;
 
 			// TODO: area light (!last_bounce_specular)
+			return area_light->color;
 
-			return todo_color;
+			
 		}else
 			return zero_color;
 	}
