@@ -102,7 +102,7 @@ rgbf PathTracer::Shade(const Intersectors& intersectors, const IntersectorCloses
 		if (last_bounce_specular && env_light != nullptr) {
 			// TODO: environment light
 
-			return todo_color;
+			return env_light->Radiance(-wo);
 		}
 		else
 			return zero_color;
@@ -118,7 +118,8 @@ rgbf PathTracer::Shade(const Intersectors& intersectors, const IntersectorCloses
 
 			// TODO: area light
 
-			return todo_color;
+			return area_light->Radiance(intersection.uv);
+			//return todo_color;
 		}
 		else
 			return zero_color;
@@ -136,23 +137,46 @@ rgbf PathTracer::Shade(const Intersectors& intersectors, const IntersectorCloses
 			// TODO: L_dir of environment light
 			// - only use SampleLightResult::L, n, pd
 			// - SampleLightResult::x is useless
+			
+			
 		}
 		else {
 			// TODO: L_dir of area light
+			vecf3 wi;
+			float pd;
+			tie(wi, pd) = SampleBRDF(intersection, wo);
+			wi = wi / wi.norm();
+			float dist = wi.norm2();
+			rgbf f_r = BRDF(intersection, wi, wo);
+			//auto pos = intersection.pos;
+			vecf3 samN = sample_light_rst.n.cast_to<vecf3>();
+			float cosineyx = wi.cos_theta(samN);
+			float cosinexy = wi.cos_theta(intersection.n.cast_to<vecf3>());
+			vecf3 deltax = intersection.pos - sample_light_rst.x;
+			rayf3 r = { intersection.pos,wi,EPSILON<float>,sqrt(dist) - EPSILON<float> };
+			//L_dir += f_r * sample_light_rst.L *cosine*cosine/ pd*deltax.norm2();
+			
+			L_dir += f_r * sample_light_rst.L * cosineyx  / pd ;
 		}
 		});
 
 	// TODO: Russian Roulette
 	// - rand01<float>() : random in [0, 1)
+	float P_RR = 0.5f;
+	float ksi = rand01<float>();
+	if (ksi > P_RR) return L_dir;
 
 	// TODO: recursion
 	// - use PathTracer::SampleBRDF to get wi and pd (probability density)
 	// wi may be **under** the surface
 	// - use PathTracer::BRDF to get BRDF value
 
+
 	// TODO: combine L_dir and L_indir
 
-	return todo_color; // you should commemt this line
+	rgbf res_color = L_dir + L_indir;
+	return res_color;
+	//return todo_color; // you should commemt this line
 }
 
 PathTracer::SampleLightResult PathTracer::SampleLight(IntersectorClosest::Rst intersection, const vecf3& wo, const Cmpt::Light* light, const Cmpt::L2W* l2w, const Cmpt::SObjPtr* ptr) {
